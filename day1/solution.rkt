@@ -16,6 +16,17 @@
     (define next (match stepped [-1 99][100 0][else stepped]))
     (values next (if (zero? next) (add1 zeros) zeros))))
 
+(define (rotate-smart x delta)
+  (define sum (+ x delta))
+  (define cycles (abs (quotient sum 100)))
+  (define-values (next delta-zeros) (rotate x delta))
+  (define zeros
+    (cond
+      [(or (zero? x) (positive? sum)) cycles]
+      [(negative? sum) (+ cycles 1)]
+      [else delta-zeros]))
+  (values next zeros))
+
 (define (solve f)
   (for/fold ([cur 50][zeros 0] #:result zeros)
             ([line lines])
@@ -26,3 +37,4 @@
 
 (solve rotate)
 (solve rotate-brute)
+(solve rotate-smart)
