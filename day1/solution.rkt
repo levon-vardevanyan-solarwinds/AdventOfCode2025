@@ -19,12 +19,12 @@
 (define (rotate-smart x delta)
   (define sum (+ x delta))
   (define cycles (abs (quotient sum 100)))
-  (define-values (next delta-zeros) (rotate x delta))
+  (define-values (next _) (rotate x delta))
   (define zeros
     (cond
       [(or (zero? x) (positive? sum)) cycles]
       [(negative? sum) (+ cycles 1)]
-      [else delta-zeros]))
+      [else 1]))
   (values next zeros))
 
 (define (solve f)
