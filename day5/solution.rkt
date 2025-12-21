@@ -3,15 +3,10 @@
 (require threading)
 
 (define (parse-range line)
-  (~> line
-      (string-split "-")
-      (map string->number _)))
+  (~> line (string-split "-") (map string->number _)))
 
 (define ranges
-  (~> "ranges.txt"
-      file->lines
-      (map parse-range _)
-      (sort #:key first <)))
+  (~> "ranges.txt" file->lines (map parse-range _) (sort #:key first <)))
 
 (define ids (map string->number (file->lines "input.txt")))
 
@@ -19,7 +14,8 @@
   (match-define (list from to) r)
   (<= from x to))
 
-(define (is-fresh? x) (ormap (curry in-range? x) ranges))
+(define (is-fresh? x)
+  (ormap (curry in-range? x) ranges))
 
 ;; part 1
 (for/sum ([id (in-list ids)] #:when (is-fresh? id)) 1)
@@ -35,12 +31,13 @@
   (list (min x1 x2) (max y1 y2)))
 
 (define merged
-  (let loop ([cur (first ranges)][rs (rest ranges)][acc empty])
+  (let loop ([cur (first ranges)]
+             [rs (rest ranges)]
+             [acc empty])
     (cond
       [(empty? rs) (cons cur acc)]
       [(intersect? cur (first rs))
-       (let ([cur (merge cur (first rs))])
-         (loop cur (rest rs) acc))]
+       (let ([cur (merge cur (first rs))]) (loop cur (rest rs) acc))]
       [else (loop (first rs) (rest rs) (cons cur acc))])))
 
 (define (range-count r)

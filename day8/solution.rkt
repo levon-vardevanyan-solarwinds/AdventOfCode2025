@@ -4,15 +4,9 @@
 (require threading)
 
 (define (parse-line line)
-  (~> line
-      (string-split ",")
-      (map string->number _)))
+  (~> line (string-split ",") (map string->number _)))
 
-(define data
-  (~> "input.txt"
-      file->lines
-      (map parse-line _)
-      list->vector))
+(define data (~> "input.txt" file->lines (map parse-line _) list->vector))
 
 (define N (vector-length data))
 
@@ -21,30 +15,27 @@
 (define (distance lhs rhs)
   (match-define (list x1 y1 z1) lhs)
   (match-define (list x2 y2 z2) rhs)
-  (sqrt (+ (square (- x1 x2))
-           (square (- y1 y2))
-           (square (- z1 z2)))))
+  (sqrt (+ (square (- x1 x2)) (square (- y1 y2)) (square (- z1 z2)))))
 
 (define (node<=? lhs rhs)
   (<= (first lhs) (first rhs)))
 
 (define h (make-heap node<=?))
 
-(for ([i (in-range N)])
-  (for ([j (in-range (add1 i) N)])
-    (define p1 (vector-ref data i))
-    (define p2 (vector-ref data j))
-    (heap-add! h (list (distance p1 p2) (list i j)))))
+(for* ([i (in-range N)]
+       [j (in-range (add1 i) N)])
+  (define p1 (vector-ref data i))
+  (define p2 (vector-ref data j))
+  (heap-add! h (list (distance p1 p2) (list i j))))
 
 ; Disjoint-set/Union-Find forest *sigh*
 (struct uff (p h) #:transparent)
 
-; we start with N sets, each element acts as its own set representative
+; we start with N sets, each element acts as its own set representative (i . (list i))
 (define (make-uff N)
   (uff (build-vector N identity)
-       (make-hash
-        (for/list ([i (in-range N)])
-          (cons i (list i))))))
+       (make-hash (for/list ([i (in-range N)])
+                    (list i i)))))
 
 ; find the representative for the set that contains x
 (define (uff-find uf x)
@@ -76,15 +67,9 @@
   (uff-union! uf x y))
 
 ;; part 1
-(~> uf
-    uff-h
-    (hash-map (λ (k v) (length v)))
-    (sort >)
-    (take 3)
-    (foldl * 1 _))
+(~> uf uff-h (hash-map (λ (k v) (length v))) (sort >) (take 3) (foldl * 1 _))
 
-(match-define
-  (list x y)
+(match-define (list x y)
   (for/last ([node (in-heap h)]
              [i (in-naturals)]
              #:do [(match-define (list dist (list x y)) node)]
@@ -94,5 +79,4 @@
     (list x y)))
 
 ;; part 2
-(* (first (vector-ref data x))
-   (first (vector-ref data y)))
+(* (first (vector-ref data x)) (first (vector-ref data y)))
